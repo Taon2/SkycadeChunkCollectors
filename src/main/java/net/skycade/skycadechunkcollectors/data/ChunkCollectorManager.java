@@ -136,7 +136,7 @@ public class ChunkCollectorManager {
                 }
 
                 // ignore the block forms of these if its not 1.16
-                if (!v116 && (material == Material.CARROT || material == Material.POTATO))
+                if (!v116 && (material == Material.CARROT || material == Material.POTATO || material == Material.COCOA))
                     continue;
 
                 if (material != null && material != Material.AIR) {
