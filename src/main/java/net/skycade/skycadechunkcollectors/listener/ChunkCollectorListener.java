@@ -67,7 +67,7 @@ public class ChunkCollectorListener implements Listener {
         int tier = 1;
         for (String s : Objects.requireNonNull(item.getItemMeta().getLore())) {
             if (s.contains("Tier:")) {
-                tier = Integer.parseInt(ChatColor.stripColor(s.substring(s.indexOf(" "))));
+                tier = Integer.parseInt(ChatColor.stripColor(s.substring(s.indexOf(" ") + 1)));
             }
         }
 
@@ -133,19 +133,17 @@ public class ChunkCollectorListener implements Listener {
         BlockData blockData = ChunkCollectorManager.getBlockData(event.getClickedBlock());
         if (blockData == null) return;
 
+        event.setCancelled(true);
+
         Player player = event.getPlayer();
 
-        if (player.isSneaking()) {
-            //todo fill inventory from storage
-        } else {
-            // only allow one person to edit the crop hopper at a time
-            if (!blockData.getStorageViewers().isEmpty()) {
-                ALREADY_VIEWING.msg(event.getPlayer());
-                return;
-            }
-
-            new CollectorGui(blockData, player.getUniqueId()).open(player);
-            player.playSound(player.getLocation(), (v116 ? Sound.BLOCK_ENDER_CHEST_OPEN : (v112 ? Sound.valueOf("BLOCK_ENDERCHEST_OPEN") : Sound.valueOf("CHEST_OPEN"))), 1.0f, 1.0f);
+        // only allow one person to edit the crop hopper at a time
+        if (!blockData.getStorageViewers().isEmpty()) {
+            ALREADY_VIEWING.msg(event.getPlayer());
+            return;
         }
+
+        new CollectorGui(blockData, player.getUniqueId()).open(player);
+        player.playSound(player.getLocation(), (v116 ? Sound.BLOCK_ENDER_CHEST_OPEN : (v112 ? Sound.valueOf("BLOCK_ENDERCHEST_OPEN") : Sound.valueOf("CHEST_OPEN"))), 1.0f, 1.0f);
     }
 }

@@ -3,6 +3,7 @@ package net.skycade.skycadechunkcollectors;
 import net.skycade.SkycadeCore.SkycadePlugin;
 import net.skycade.skycadechunkcollectors.command.ChunkCollectorCommand;
 import net.skycade.skycadechunkcollectors.data.ChunkCollectorManager;
+import net.skycade.skycadechunkcollectors.hook.ClaimsHook;
 import net.skycade.skycadechunkcollectors.hook.FactionsHook;
 import net.skycade.skycadechunkcollectors.hook.Hook;
 import net.skycade.skycadechunkcollectors.hook.SkyblockHook;
@@ -54,6 +55,7 @@ public class SkycadeChunkCollectorsPlugin extends SkycadePlugin {
 
         Hook.registerHook(new SkyblockHook());
         Hook.registerHook(new FactionsHook());
+        Hook.registerHook(new ClaimsHook());
 
         registerListeners(new ChunkCollectorListener());
 

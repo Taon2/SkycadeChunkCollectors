@@ -5,4 +5,4 @@ description: Chunk Collectors
 api-version: 1.16
 authors: ["Christian Doughty (Taon2)"]
 depend: [SkycadeCore]
-softdepend: [Factions, SkycadeSkyblock]
+softdepend: [Factions, SkycadeSkyblock, SkycadeClaims]

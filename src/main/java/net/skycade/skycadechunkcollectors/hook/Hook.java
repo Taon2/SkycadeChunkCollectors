@@ -13,7 +13,6 @@ public abstract class Hook implements Listener {
 
     public static Set<Hook> hooks = new HashSet<>();
 
-    //todo add smp claims hook
     public static void registerHook(Hook hook) {
         if (Bukkit.getPluginManager().isPluginEnabled(hook.name)) {
             hooks.add(hook);

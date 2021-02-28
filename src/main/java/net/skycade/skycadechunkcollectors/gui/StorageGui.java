@@ -9,7 +9,6 @@ import net.skycade.skycadechunkcollectors.SkycadeChunkCollectorsPlugin;
 import net.skycade.skycadechunkcollectors.data.BlockData;
 import net.skycade.skycadeshop.SkycadeShopPlugin;
 import org.bukkit.Material;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
@@ -42,24 +41,19 @@ public class StorageGui extends DynamicGui {
 
         setCloseInteraction((p, ev) -> blockData.removeStorageViewer(uuid));
 
+        setPlayerInventoryInteraction((p, ev) -> {
+            if (ev.getCursor() != null && ev.getCursor().getType() != Material.AIR)
+                ev.setCancelled(false);
+        });
+
         blockData.storageToItemStack().stream()
                 .skip((page - 1) * 45)
                 .limit(45)
                 .forEach(item -> addItemInteraction(p -> item,
                         (p, ev) -> {
-                            // handle player inventory click
-                            if (ev.getClickedInventory() != null
-                                    && ev.getClickedInventory().getType() == InventoryType.PLAYER) {
-
-                                // allow players to place in their inventory
-                                if (ev.getCursor() != null && ev.getCursor().getType() != Material.AIR)
-                                    ev.setCancelled(false);
-
-                                return;
-                            }
-
                             // empty cursor means they are only removing items, and are not trying to add items
-                            if (ev.getCursor() == null || ev.getCursor().getType() == Material.AIR) {
+                            // also allow shift clicking
+                            if (ev.getCursor() == null || ev.getCursor().getType() == Material.AIR || ev.isShiftClick()) {
                                 ev.setCancelled(false);
                                 blockData.removeFromStorage(ev.getCurrentItem());
                             }
@@ -78,6 +72,8 @@ public class StorageGui extends DynamicGui {
 
         setItemInteraction(45, new ItemBuilder(BACK).build(),
                 (p, ev) -> {
+                    if (ev.isShiftClick()) return;
+
                     if (page > 1)
                         new StorageGui(blockData, uuid, page - 1).open(p);
                     else
@@ -87,6 +83,8 @@ public class StorageGui extends DynamicGui {
         if (blockData.getStoragePages() > page) {
             setItemInteraction(53, new ItemBuilder(NEXT).build(),
                     (p, ev) -> {
+                        if (ev.isShiftClick()) return;
+
                         new StorageGui(blockData, uuid, page + 1).open(p);
                     });
         }

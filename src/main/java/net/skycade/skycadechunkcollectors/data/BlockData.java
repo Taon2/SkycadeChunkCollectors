@@ -76,35 +76,46 @@ public class BlockData implements Comparable<BlockData> {
      * @param item The item to be added to storage
      */
     public void addToStorage(ItemStack item) {
-        if (getStoredStacks() >= getMaxSlots()) {
-            // try "topping off" a stack
-            for (SimpleItem stored : storage) {
-                if (stored.getMaterial() == item.getType()
-                        && stored.getData() == item.getDurability()) {
-                    if (stored.getAmount() % 64 == 0) return; // this item is already "topped off"
+        int amount = item.getAmount();
 
-                    if (stored.getAmount() % 64 > item.getAmount()) {
-                        // top off the stack with the item amount, because it can definitely fit
-                        stored.setAmount(stored.getAmount() + item.getAmount());
-                    } else {
-                        // top off the stack with the remainder, because the item amount wont fit
-                        stored.setAmount(stored.getAmount() + stored.getAmount() % 64);
-                    }
-                }
-            }
-        } else {
-            // add to existing stack
+        // add the full item if space
+        if (getStoredStacks() < getMaxSlots()) {
             for (SimpleItem stored : storage) {
                 if (stored.getMaterial() == item.getType()
                         && stored.getData() == item.getDurability()) {
-                    stored.setAmount(stored.getAmount() + item.getAmount());
+                    stored.setAmount(stored.getAmount() + amount);
                     return;
                 }
             }
 
-            // add a new item
-            SimpleItem simpleItem = new SimpleItem(item.getType(), item.getDurability(), item.getAmount());
+            // add a new item, because it wasn't in storage yet
+            SimpleItem simpleItem = new SimpleItem(item.getType(), item.getDurability(), amount);
             storage.add(simpleItem);
+        } else {
+            // try "topping off" a stack
+            for (SimpleItem stored : storage) {
+                if (stored.getAmount() <= 0) continue;
+
+                if (stored.getMaterial() == item.getType()
+                        && stored.getData() == item.getDurability()) {
+                    int maxStackSize = stored.getMaterial().getMaxStackSize();
+                    int storedAmount = stored.getAmount();
+                    int space = maxStackSize - (storedAmount % maxStackSize);
+
+                    if (storedAmount % maxStackSize == 0) return; // this item is already "topped off"
+
+                    if (space > amount) {
+                        // top off the stack with the full item amount, because it can definitely fit
+                        stored.setAmount(storedAmount + amount);
+                    } else {
+                        // top off the stack with the remainder, because the item amount wont fit
+                        stored.setAmount(storedAmount + space);
+                    }
+
+                    // if it gets here, the item was handled
+                    return;
+                }
+            }
         }
     }
 

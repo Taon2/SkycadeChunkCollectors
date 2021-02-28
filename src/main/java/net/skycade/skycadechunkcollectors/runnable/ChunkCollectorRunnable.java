@@ -117,6 +117,9 @@ public class ChunkCollectorRunnable extends BukkitRunnable {
 
                             // add the item type to be removed
                             toRemove.add(itemStack.getType());
+
+                            // this itemstack has been handled if it gets this far, no need to loop through more collectors
+                            break;
                         }
 
                         // right now, we want to remove the item stack whether it was collected (no dupes)
