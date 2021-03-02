@@ -1,5 +1,6 @@
 package net.skycade.skycadechunkcollectors;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import net.skycade.SkycadeCore.SkycadePlugin;
 import net.skycade.skycadechunkcollectors.command.ChunkCollectorCommand;
 import net.skycade.skycadechunkcollectors.data.ChunkCollectorManager;
@@ -8,6 +9,7 @@ import net.skycade.skycadechunkcollectors.hook.FactionsHook;
 import net.skycade.skycadechunkcollectors.hook.Hook;
 import net.skycade.skycadechunkcollectors.hook.SkyblockHook;
 import net.skycade.skycadechunkcollectors.listener.ChunkCollectorListener;
+import net.skycade.skycadechunkcollectors.listener.packets.EndPortalFramePacketListener;
 import net.skycade.skycadechunkcollectors.runnable.ChunkCollectorRunnable;
 import net.skycade.skycadechunkcollectors.util.Messages;
 import org.bukkit.Bukkit;
@@ -58,6 +60,7 @@ public class SkycadeChunkCollectorsPlugin extends SkycadePlugin {
         Hook.registerHook(new ClaimsHook());
 
         registerListeners(new ChunkCollectorListener());
+        ProtocolLibrary.getProtocolManager().addPacketListener(new EndPortalFramePacketListener(this));
 
         chunkCollectorRunnable = new ChunkCollectorRunnable().runTaskTimer(this, 5L, 50L);
     }

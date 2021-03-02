@@ -77,10 +77,13 @@ public class ChunkCollectorListener implements Listener {
     }
 
     /**
-     * Handles breaking a chunk collector in the world
+     * Handles breaking a chunk collector in the world for creative mode players
+     * Survival mode players are handled in the Packet Listener
      */
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
+        if (event.getPlayer().getGameMode() != GameMode.CREATIVE) return;
+
         // if you cant build here, don't break here
         if (!Hook.checkBuild(event.getPlayer(), event.getBlock())) return;
 
