@@ -4,9 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BlockData implements Comparable<BlockData> {
     private UUID uuid;
@@ -16,6 +14,7 @@ public class BlockData implements Comparable<BlockData> {
     private int storagePages;
     private boolean doAutosell;
     private List<UUID> storageViewers;
+    private LinkedHashSet<Location> linkedChests = new LinkedHashSet<>();
 
     public BlockData(UUID uuid, Location location, int tier) {
         this.uuid = uuid;
@@ -119,6 +118,10 @@ public class BlockData implements Comparable<BlockData> {
         }
     }
 
+    /**
+     * Remove an itemstack from storage
+     * @param item The itemstack to be removed
+     */
     public void removeFromStorage(ItemStack item) {
         // remove from existing stack
         List<SimpleItem> toRemove = new ArrayList<>();
@@ -138,6 +141,29 @@ public class BlockData implements Comparable<BlockData> {
         }
 
         storage.removeAll(toRemove);
+    }
+
+    /**
+     * Keeps a set list of items in storage, removing all others
+     * @param items The items to be kept in storage
+     */
+    public void keepInStorage(List<ItemStack> items) {
+        List<SimpleItem> toKeep = new ArrayList<>();
+        for (ItemStack item : items) {
+            for (SimpleItem stored : toKeep) {
+                // if the item exists in storage already, add the amounts
+                if (stored.getMaterial() == item.getType()
+                        && stored.getData() == item.getDurability()) {
+                    stored.setAmount(stored.getAmount() + item.getAmount());
+                    break; // exit the loop
+                }
+            }
+
+            // add a new item because it is missing
+            toKeep.add(new SimpleItem(item.getType(), item.getDurability(), item.getAmount()));
+        }
+
+        this.storage = toKeep;
     }
 
     public List<SimpleItem> getStorage() {
@@ -201,6 +227,21 @@ public class BlockData implements Comparable<BlockData> {
         }
 
         return items;
+    }
+
+    public void addLinkedChest(Location location) {
+        if (location == null) return;
+        Location clone = location.clone();
+        if (linkedChests.contains(clone)) return;
+        linkedChests.add(clone);
+    }
+
+    public void removeLinkedChest(Location location) {
+        linkedChests.remove(location);
+    }
+
+    public LinkedHashSet<Location> getLinkedChests() {
+        return linkedChests;
     }
 
     public void toggleAutosell() {

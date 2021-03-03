@@ -40,9 +40,12 @@ public class CollectorGui extends DynamicGui {
         OfflinePlayer op = Bukkit.getOfflinePlayer(blockData.getUuid());
         storage.addToLore(ChatColor.GOLD + "" + ChatColor.BOLD + "Owner: " + ChatColor.GRAY + op.getName());
         storage.addToLore(ChatColor.GOLD + "" + ChatColor.BOLD + "Pages: " + ChatColor.GRAY + blockData.getStoragePages());
+        storage.addToLore(ChatColor.GOLD + "" + ChatColor.BOLD + "Linked Chests: " + ChatColor.GRAY + blockData.getLinkedChests().size() + "/5");
 
-        if (blockData.getStorage().size() > 0)
+        if (blockData.getStorage().size() > 0) {
+            storage.addToLore("");
             storage.addToLore(ChatColor.GOLD + "" + ChatColor.BOLD + "Contents:");
+        }
 
         for (SimpleItem item : blockData.getStorage()) {
             if (item.getData() == 0) {

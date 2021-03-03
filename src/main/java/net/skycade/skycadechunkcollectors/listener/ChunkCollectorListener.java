@@ -141,12 +141,15 @@ public class ChunkCollectorListener implements Listener {
         Player player = event.getPlayer();
 
         // only allow one person to edit the crop hopper at a time
-        if (!blockData.getStorageViewers().isEmpty()) {
+        if (!blockData.getStorageViewers().isEmpty()
+                && !blockData.getStorageViewers().contains(player.getUniqueId())) {
             ALREADY_VIEWING.msg(event.getPlayer());
             return;
         }
 
         new CollectorGui(blockData, player.getUniqueId()).open(player);
-        player.playSound(player.getLocation(), (v116 ? Sound.BLOCK_ENDER_CHEST_OPEN : (v112 ? Sound.valueOf("BLOCK_ENDERCHEST_OPEN") : Sound.valueOf("CHEST_OPEN"))), 1.0f, 1.0f);
+        player.playSound(player.getLocation(),
+                (v116 ? Sound.BLOCK_ENDER_CHEST_OPEN : (v112 ? Sound.valueOf("BLOCK_ENDERCHEST_OPEN") : Sound.valueOf("CHEST_OPEN"))),
+                1.0f, 1.0f);
     }
 }

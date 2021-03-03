@@ -136,7 +136,11 @@ public class ChunkCollectorManager {
                 }
 
                 // ignore the block forms of these if its not 1.16
-                if (!v116 && (material == Material.CARROT || material == Material.POTATO || material == Material.COCOA))
+                if (!v116 && (material == Material.CARROT || material == Material.POTATO))
+                    continue;
+
+                // ignore the block forms of these if it is 1.16
+                if (v116 && (material == Material.COCOA))
                     continue;
 
                 if (material != null && material != Material.AIR) {
@@ -225,6 +229,22 @@ public class ChunkCollectorManager {
 
                 BlockData value = new BlockData(uuid, loc, types, storage, storagepages, doAutosell);
 
+                // load linked chests
+                JsonElement linkedChestsArray = blockData.get("linkedChests");
+                if (linkedChestsArray != null && linkedChestsArray.isJsonArray()) {
+                    for (JsonElement lc : linkedChestsArray.getAsJsonArray()) {
+                        JsonObject linkedChests = lc.getAsJsonObject();
+                        World wLc = Bukkit.getWorld(linkedChests.get("world").getAsString());
+                        if (wLc == null) continue;
+
+                        int xLc = linkedChests.get("x").getAsInt();
+                        int yLc = linkedChests.get("y").getAsInt();
+                        int zLc = linkedChests.get("z").getAsInt();
+
+                        value.addLinkedChest(new Location(wLc, xLc, yLc, zLc));
+                    }
+                }
+
                 map.put(loc, value);
 
                 String worldName = loc.getWorld().getName();
@@ -276,6 +296,18 @@ public class ChunkCollectorManager {
 
             // save autosell toggle
             dataMap.put("autosell", data.doAutosell());
+
+            List<Map<String, Object>> linkedChests = new ArrayList<>();
+            for (Location linkedChest : entry.getValue().getLinkedChests()) {
+                Map<String, Object> lcMap = new HashMap<>();
+                lcMap.put("world", linkedChest.getWorld().getName());
+                lcMap.put("x", linkedChest.getBlockX());
+                lcMap.put("y", linkedChest.getBlockY());
+                lcMap.put("z", linkedChest.getBlockZ());
+                linkedChests.add(lcMap);
+            }
+
+            dataMap.put("linkedChests", linkedChests);
 
             jsonMap.put(loc.hashCode() + "", dataMap);
         }
