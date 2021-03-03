@@ -6,7 +6,7 @@ import net.skycade.api.localization.Localization;
 public class Messages {
 
     public static final Localization.Message USAGE = new Localization.Message("usage", "Usage: /collector give <name> <amount>");
-    public static final Localization.Message PLACED = new Localization.Message("placed", "&aYou placed a &bChunk Collector&a!");
+    public static final Localization.Message PLACED = new Localization.Message("placed", "&aYou placed a &bChunk Collector&a!\n&bVisit this link to learn about them.\n&fhttps://skycade.net/threads/chunk-collectors-guide.53059/");
     public static final Localization.Message CANNOT_PLACE = new Localization.Message("cannot-place", "&cYou cannot place a chunk collector in this world.");
     public static final Localization.Message SUCCESS = new Localization.Message("success", "&aSuccess!");
     public static final Localization.Message ALREADY_VIEWING = new Localization.Message("already-viewing", "&cAnother player is already viewing this chunk collector.");
