@@ -84,7 +84,7 @@ public class OresGui extends DynamicGui {
                         new TypesGui(blockData, uuid).open(p);
                 });
 
-        if (ChunkCollectorManager.getCrops().size() > page * 36) {
+        if (ChunkCollectorManager.getOres().size() > page * 45) {
             setItemInteraction(53, new ItemBuilder(NEXT).build(),
                     (p, ev) -> {
                         new OresGui(blockData, uuid, page + 1).open(p);

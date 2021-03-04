@@ -89,7 +89,7 @@ public class DropsGui extends DynamicGui {
                         new TypesGui(blockData, uuid).open(p);
                 });
 
-        if (ChunkCollectorManager.getCrops().size() > page * 36) {
+        if (ChunkCollectorManager.getDrops().size() > page * 45) {
             setItemInteraction(53, new ItemBuilder(NEXT).build(),
                     (p, ev) -> {
                         new DropsGui(blockData, uuid, page + 1).open(p);
