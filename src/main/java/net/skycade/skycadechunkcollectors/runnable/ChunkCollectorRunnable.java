@@ -9,8 +9,9 @@ import net.skycade.SkycadeCore.utility.AsyncScheduler;
 import net.skycade.skycadechunkcollectors.SkycadeChunkCollectorsPlugin;
 import net.skycade.skycadechunkcollectors.data.BlockData;
 import net.skycade.skycadechunkcollectors.data.ChunkLocation;
+import net.skycade.skycadechunkcollectors.data.SimpleItem;
+import net.skycade.skycadechunkcollectors.event.ItemAutoSaleEvent;
 import net.skycade.skycadeshop.SkycadeShopPlugin;
-import net.skycade.skycadeshop.event.ItemAutoSaleEvent;
 import net.skycade.skycadeshop.shop.Shop;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -67,82 +68,13 @@ public class ChunkCollectorRunnable extends BukkitRunnable {
 
                         // handle the items and then send to chests if possible
                         // remaining unhandled items are still stored in items for next iteration
-                        handleItems(blockData, items);
+                        List<SimpleItem> toSell = handleItems(blockData, items);
+                        // sell whatever items should be sold
+                        if (!toSell.isEmpty())
+                            sellItems(blockData, toSell);
+                        // send all possible items to chests
                         sendToChests(blockData);
                     }
-
-//                    // loop through all dropped items in this chunk
-//                    for (Entity e : items) {
-//                        if (!e.isValid() || e.isDead()) continue;
-//                        Item item = (Item) e;
-//                        ItemStack itemStack = item.getItemStack();
-//
-//                        // stops trail items from being picked up
-//                        if (itemStack.hasItemMeta()
-//                                && itemStack.getItemMeta() != null
-//                                && itemStack.getItemMeta().hasDisplayName()
-//                                && itemStack.getItemMeta().getDisplayName().contains("Rain_ItId")) continue;
-//
-//                        // list of material types that should be removed after the hoppers pick up what they can
-//                        List<Material> toRemove = new ArrayList<>();
-//                        // fill the collectors of this chunk with items
-//                        for (BlockData blockData : data) {
-//                            Location location = blockData.getLocation();
-//                            Block block = location.getBlock();
-//
-//                            // ignore this collector if it's not a chunk collector
-//                            if (!(block.getType() == (v116 ? Material.END_PORTAL_FRAME : Material.valueOf("ENDER_PORTAL_FRAME")))) continue;
-//                            // ignore this collector if it cannot pick up this item type
-//                            if (!blockData.getTypes().contains(itemStack.getType())) continue;
-//
-//                            // determine what to do with this item here
-//                            if (Bukkit.getPluginManager().isPluginEnabled("Factions") && itemStack.getType() == Material.TNT) {
-//                                // if factions is enabled and the item is tnt, send it to the faction bank
-//                                FPlayer fPlayer = FPlayers.getInstance().getByOfflinePlayer(Bukkit.getOfflinePlayer(blockData.getUuid()));
-//
-//                                if (fPlayer.hasFaction()) {
-//                                    Faction faction = fPlayer.getFaction();
-//                                    faction.setTNTBank(faction.getTNTBank() + itemStack.getAmount());
-//                                }
-//                            } else if (blockData.doAutosell()) {
-//                                // sell the item
-//                                OfflinePlayer op = Bukkit.getOfflinePlayer(blockData.getUuid());
-//
-//                                // try to sell the item
-//                                shop.get("item:" + itemStack.getType().name()).ifPresent(s -> {
-//                                    if (!s.isSellable()) return;
-//
-//                                    double value = s.getUnitSellPrice() * itemStack.getAmount();
-//
-//                                    ItemAutoSaleEvent event = new ItemAutoSaleEvent(block, itemStack, op, value);
-//                                    Bukkit.getPluginManager().callEvent(event);
-//
-//                                    if (event.isCancelled())
-//                                        return;
-//
-//                                    AsyncScheduler.runTask(SkycadeChunkCollectorsPlugin.getInstance(), () -> {
-//                                        econ.depositPlayer(op, event.getNewCost());
-//                                    });
-//                                });
-//                            } else {
-//                                // store the item
-//                                blockData.addToStorage(itemStack);
-//                            }
-//
-//                            // add the item type to be removed
-//                            toRemove.add(itemStack.getType());
-//
-//                            // this itemstack has been handled if it gets this far, no need to loop through more collectors
-//                            break;
-//                        }
-//
-//                        // right now, we want to remove the item stack whether it was collected (no dupes)
-//                        // or if it isn't collected, to prevent extra items creating lag
-//                        // obviously, only remove item types that were attempted to be picked up, but failed to do so
-//                        // TL;DR always remove the item
-//                        if (toRemove.contains(itemStack.getType()))
-//                            e.remove();
-//                    }
                 }
             }
         }
@@ -152,9 +84,10 @@ public class ChunkCollectorRunnable extends BukkitRunnable {
      * A Chunk Collector handles the list of items, determining where they should go
      * @param blockData The Chunk Collector to handle the items
      * @param items The items to be handled
+     * @return The list of items that should be automatically sold to the shop
      */
-    private void handleItems(BlockData blockData, List<Entity> items) {
-        Block block = blockData.getLocation().getBlock();
+    private List<SimpleItem> handleItems(BlockData blockData, List<Entity> items) {
+        List<SimpleItem> toSell = new ArrayList<>();
 
         // loop through list of item entities to handle
         for (Entity e : new ArrayList<>(items)) {
@@ -192,29 +125,26 @@ public class ChunkCollectorRunnable extends BukkitRunnable {
                 items.remove(e);
                 e.remove();
             } else if (blockData.doAutosell()) {
-                // sell the item
-                OfflinePlayer op = Bukkit.getOfflinePlayer(blockData.getUuid());
+                // add the items that should be sold
+                boolean handled = false;
+                for (SimpleItem i : toSell) {
+                    if (i.getMaterial() == itemStack.getType()
+                            && i.getData() == itemStack.getDurability()) {
+                        i.setAmount(i.getAmount() + itemStack.getAmount());
+                        handled = true;
+                        break;
+                    }
+                }
 
-                // try to sell the item
-                shop.get("item:" + itemStack.getType().name()).ifPresent(s -> {
-                    if (!s.isSellable()) return;
+                // add a new item, because it wasn't in the list yet
+                if (!handled) {
+                    SimpleItem simpleItem = new SimpleItem(itemStack.getType(), itemStack.getDurability(), itemStack.getAmount());
+                    toSell.add(simpleItem);
+                }
 
-                    double value = s.getUnitSellPrice() * itemStack.getAmount();
-
-                    ItemAutoSaleEvent event = new ItemAutoSaleEvent(block, itemStack, op, value);
-                    Bukkit.getPluginManager().callEvent(event);
-
-                    if (event.isCancelled())
-                        return;
-
-                    AsyncScheduler.runTask(SkycadeChunkCollectorsPlugin.getInstance(), () -> {
-                        econ.depositPlayer(op, event.getNewCost());
-                    });
-
-                    // remove the item from next iteration and world
-                    items.remove(e);
-                    e.remove();
-                });
+                // remove the item from next iteration and world
+                items.remove(e);
+                e.remove();
             } else {
                 // store the item
                 blockData.addToStorage(itemStack);
@@ -222,6 +152,39 @@ public class ChunkCollectorRunnable extends BukkitRunnable {
                 items.remove(e);
                 e.remove();
             }
+        }
+
+        return toSell;
+    }
+
+    /**
+     * Sells a list of items to shop in one cycle, saving on lag from multiple calls
+     * @param blockData The Collector to sell items from
+     * @param toSell The list of items to sell to shop
+     */
+    private void sellItems(BlockData blockData, List<SimpleItem> toSell) {
+        Block block = blockData.getLocation().getBlock();
+        OfflinePlayer op = Bukkit.getOfflinePlayer(blockData.getUuid());
+
+        // loop through the items to sell
+        for (SimpleItem simpleItem : toSell) {
+            // try to sell the item
+            shop.get("item:" + simpleItem.getMaterial().name()).ifPresent(s -> {
+                if (!s.isSellable()) return;
+
+                double value = s.getUnitSellPrice() * simpleItem.getAmount();
+
+                ItemAutoSaleEvent event =
+                        new ItemAutoSaleEvent(block, simpleItem.getMaterial(), simpleItem.getData(), simpleItem.getAmount(), op, value);
+                Bukkit.getPluginManager().callEvent(event);
+
+                if (event.isCancelled())
+                    return;
+
+                AsyncScheduler.runTask(SkycadeChunkCollectorsPlugin.getInstance(), () -> {
+                    econ.depositPlayer(op, event.getNewCost());
+                });
+            });
         }
     }
 

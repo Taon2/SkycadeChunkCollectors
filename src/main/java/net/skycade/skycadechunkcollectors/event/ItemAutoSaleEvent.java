@@ -1,11 +1,11 @@
 package net.skycade.skycadechunkcollectors.event;
 
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.inventory.ItemStack;
 
 public class ItemAutoSaleEvent extends Event implements Cancellable {
 
@@ -18,16 +18,20 @@ public class ItemAutoSaleEvent extends Event implements Cancellable {
     private final Block block;
     private final OfflinePlayer player;
     private final double initialCost;
-    private final ItemStack itemStack;
+    private final Material material;
+    private final short durability;
+    private final int amount;
     private double newCost;
 
     private boolean isCancelled = false;
 
-    public ItemAutoSaleEvent(Block block, ItemStack itemStack, OfflinePlayer player, double initialCost) {
+    public ItemAutoSaleEvent(Block block, Material material, short durability, int amount, OfflinePlayer player, double initialCost) {
         this.block = block;
         this.player = player;
         this.initialCost = initialCost;
-        this.itemStack = itemStack;
+        this.material = material;
+        this.durability = durability;
+        this.amount = amount;
 
         this.newCost = initialCost;
     }
@@ -42,10 +46,6 @@ public class ItemAutoSaleEvent extends Event implements Cancellable {
 
     public double getInitialCost() {
         return initialCost;
-    }
-
-    public ItemStack getItemStack() {
-        return itemStack;
     }
 
     public double getNewCost() {
@@ -69,5 +69,17 @@ public class ItemAutoSaleEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         this.isCancelled = cancel;
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
+
+    public short getDurability() {
+        return durability;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 }
