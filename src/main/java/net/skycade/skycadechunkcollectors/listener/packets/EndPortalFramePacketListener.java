@@ -117,7 +117,7 @@ public class EndPortalFramePacketListener implements PacketListener {
         Player player = packetEvent.getPlayer();
         if (!player.getGameMode().equals(GameMode.SURVIVAL)) return;
         ItemStack item = player.getInventory().getItemInHand();
-        if (!item.getType().equals(Material.DIAMOND_PICKAXE)) return;
+        if (!item.getType().equals(Material.DIAMOND_PICKAXE) && (v116 && !item.getType().equals(Material.valueOf("NETHERITE_PICKAXE")))) return;
         EnumWrappers.PlayerDigType digType = packetEvent.getPacket().getPlayerDigTypes().read(0);
 
         BlockPosition blockPos = packetEvent.getPacket().getBlockPositionModifier().read(0);

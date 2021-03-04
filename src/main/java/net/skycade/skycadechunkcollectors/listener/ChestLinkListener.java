@@ -55,8 +55,8 @@ public class ChestLinkListener implements Listener {
             Chunk collectorChunk = linkSession.collector.getLocation().getChunk();
             Chunk blockChunk = block.getChunk();
 
-            if (Math.abs(collectorChunk.getX() - blockChunk.getX()) > 1 ||
-                    Math.abs(collectorChunk.getZ() - blockChunk.getZ()) > 1) {
+            if (Math.abs(collectorChunk.getX() - blockChunk.getX()) > 4 ||
+                    Math.abs(collectorChunk.getZ() - blockChunk.getZ()) > 4) {
                 CANNOT_LINK.msg(player);
                 return;
             }

@@ -150,14 +150,20 @@ public class BlockData implements Comparable<BlockData> {
     public void keepInStorage(List<ItemStack> items) {
         List<SimpleItem> toKeep = new ArrayList<>();
         for (ItemStack item : items) {
+            boolean handled = false;
             for (SimpleItem stored : toKeep) {
                 // if the item exists in storage already, add the amounts
                 if (stored.getMaterial() == item.getType()
                         && stored.getData() == item.getDurability()) {
                     stored.setAmount(stored.getAmount() + item.getAmount());
+                    handled = true;
                     break; // exit the loop
                 }
             }
+
+            // if the item was handled by adding to an existing stack, don't let it get to the next line
+            if (handled)
+                continue;
 
             // add a new item because it is missing
             toKeep.add(new SimpleItem(item.getType(), item.getDurability(), item.getAmount()));
